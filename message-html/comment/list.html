@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>列表页</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <link href="/assets/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/assets/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="/assets/css/animate.min.css" rel="stylesheet"> 
+    <link href="/assets/css/style.min.css?v=4.1.0" rel="stylesheet">      
+    <link href="/assets/css/diy.css" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+    <div class="row border-bottom white-bg dashboard-header">
+        <div class="col-sm-3">
+            所属栏目：留言 &gt; 列表
+        </div>
+        <div class="col-sm-9 pull-right" id="search_app">
+            <div class="ibox-tools">
+                <form class="form-inline text-right">
+                    <div class="form-group form-group-sm">                          
+                        <input type="text" onclick="laydate({choose:function(datas){search_app.start_date = datas }})" :value="start_date" class="form-control time-inputs w100" placeholder="请选择开始时间..."> 至
+                        <input ype="text" onclick="laydate({choose:function(datas){search_app.end_date = datas }})" :value="end_date" class="form-control time-inputs w100" placeholder="请选择结束时间...">
+                        <input type="text" class="form-control w100" :placeholder="placeholder" v-model.trim="mem_code">
+                    </div>
+                    <div class="input-group">
+                        <button type="button" @click="search()" class="btn btn-sm btn-primary">搜索</button>
+                        <a href="javascript:location.reload();" class="btn btn-primary btn-sm">刷新</a>
+                    </div>                    
+                </form>
+                <my-component ref="company"  v-bind:com-info="com_info" v-bind:func="'hr/shop/get_company_level'"></my-component>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper wrapper-content" id="app">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox">
+                <!-- begin -->
+
+                    <div class="ibox-title">
+                        <ul class="nav nav-tabs nav-tabs-link"> 
+                            <li class="active"><a>列表</a></li>
+                            <li><a href="add.html">新增</a></li> 
+                            <li class="pull-right">
+                                <div class="ibox-tools"> 
+                                    <!-- <a href="javascript:location.reload();" class="btn btn-primary btn-xs"><i class="fa fa-refresh"></i> 刷新</a> -->
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="ibox-content diy-tags">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>会员姓名</th>
+                                    <th>留言标题</th> 
+                                    <th>留言时间</th>
+                                    <th>回复状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr> 
+                                    <td>3</td>
+                                    <td>张三</td>
+                                    <td>菜百的以旧换新服务是只有总店可以办理吗?其他店可以吗?铂金对戒可以换款吗?</td>
+                                    <td>2019-06-03 11:39</td>
+                                    <td><i class="fa fa-check text-navy"></i></td>
+                                    <td><a>删除</a> | <a href="detail.html">查看</a></td>
+                                </tr>
+                                <tr> 
+                                    <td>2</td>
+                                    <td>李四</td>
+                                    <td>婚纱钻戒的价格是多少钱?</td>
+                                    <td>2019-06-03 10:05</td>
+                                    <td><i class="fa fa-close"></i></td>
+                                    <td><a>删除</a> | <a href="detail.html">查看</a></td>
+                                </tr>
+                                <tr> 
+                                    <td>1</td>
+                                    <td>王五</td>
+                                    <td>有个100克的千足金金条，不是菜百买的，也没发票，可以加工成手镯吗？加工费多少钱？</td>
+                                    <td>2019-06-03 09:12</td>
+                                    <td><i class="fa fa-close"></i></td>
+                                    <td><a>删除</a> | <a href="detail.html">查看</a></td>
+                                </tr>
+                                <!-- <tr v-for="(e,i) in consume"> 
+                                    <td v-text="e.order_code"></td>
+                                    <td v-text="e.name"></td>
+                                    <td v-text="e.code"></td>
+                                    <td v-text="e.card_code"></td>
+                                    <td v-text="e.addtime"></td>
+                                    <td v-text="'&yen; '+e.amount"></td>
+                                </tr> -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="9" class="footable-visible">
+                                        <ul class="pagination pull-right"></ul>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+ 
+                    </div>
+                <!-- end -->
+                </div>
+            </div>
+
+        </div> 
+    </div>
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/assets/js/content.min.js?v=1.0.0"></script>
+<script src="/assets/js/plugins/iCheck/icheck.min.js"></script>
+<script src="/assets/js/vue.min.js"></script>
+<script src="/assets/js/axios.min.js"></script>
+<script src="/assets/js/qs.js"></script>
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/plugins/layer/layer.js"></script>
+<!-- <script src="/assets/vue/common/company_t.js"></script>
+<script src="/assets/vue/member/members_consume.js?19"></script> -->
+<script src="/assets/js/plugins/laypage/laypage.js"></script>
+<script src="/assets/js/plugins/laydate/laydate.js"></script>  
+</body>
+</html>

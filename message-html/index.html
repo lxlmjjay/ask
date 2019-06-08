@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录－连锁业务分析系统</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <link rel="shortcut icon" href="favicon.ico"> 
+    <link href="assets/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="assets/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="assets/css/animate.min.css" rel="stylesheet">
+    <link href="assets/css/style.min.css?v=4.1.0" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <meta http-equiv="refresh" content="0;ie.html" />
+    <![endif]-->
+    <script>if(window.top !== window.self){ window.top.location = window.location;}</script>
+</head>
+
+<body class="gray-bg">
+
+    <div class="middle-box text-center loginscreen  animated fadeInDown" id="app">
+        <div>
+            <div>
+                <h1 class="logo-name">留言板</h1>
+            </div>
+            <h3></h3>
+
+            <form class="m-t" role="form" action=""  @submit.prevent="login">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="请填写手机号" v-model="user" required="">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="密码" v-model="upass" required="">
+                </div>
+                <div class="form-group clearfix" style="position: relative;">
+                    <input type="text" class="form-control" placeholder="验证码" style="width:calc(100% - 100px);text-transform:uppercase;" v-model="ucode" required="">
+                    <a style="position: absolute;top:1px;right:0;" @click="captcha"><img :src="captcha_img"></a>
+                </div>
+                <button type="submit" class="btn btn-primary block full-width m-b">登 录</button>
+                <a href="main.html" class="btn btn-primary block full-width m-b">临时入口</a>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="assets/js/vue.min.js"></script>
+    <script src="assets/js/axios.min.js"></script>
+    <script src="assets/js/qs.js"></script>
+    <script src="assets/js/common.js?Math.random()"></script>
+    <script src="assets/js/plugins/layer/layer.js"></script>
+    <script src="assets/vue/common/login.js?20171013"></script> 
+</body>
+</html>

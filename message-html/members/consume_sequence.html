@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>列表页</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <link href="/assets/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/assets/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="/assets/css/animate.min.css" rel="stylesheet"> 
+    <link href="/assets/css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link href="/assets/js/plugins/zTree/css/demo.css" rel="stylesheet"  type="text/css">
+    <link href="/assets/js/plugins/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" type="text/css">
+    <link href="/assets/css/diy.css" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+    <div class="row border-bottom white-bg dashboard-header">
+        <div class="col-sm-3">
+            所属栏目：会员 &gt; 会员消费排名
+        </div>
+        <div class="col-sm-9 pull-right" id="search_app">
+            <div class="ibox-tools">
+                <form class="form-inline text-right">
+                    <div class="form-group form-group-sm">                         
+                        <input type="text" class="form-control" placeholder="点击选择门店" :value="com_info.com_name" @click="$refs.company.index()">
+                        <input type="text" onclick="laydate({choose:function(datas){search_app.start_date = datas }})" :value="start_date" class="form-control time-inputs w100" placeholder="请选择开始时间..."> 至
+                        <input ype="text" onclick="laydate({choose:function(datas){search_app.end_date = datas }})" :value="end_date" class="form-control time-inputs w100" placeholder="请选择结束时间...">
+                    </div>
+                    <div class="input-group">
+                        <button type="button" @click="search()" class="btn btn-sm btn-primary">搜索</button>
+                        <a href="javascript:location.reload();" class="btn btn-primary btn-sm">刷新</a>
+                    </div>                    
+                </form>
+                <my-component ref="company"  v-bind:com-info="com_info" v-bind:func="'hr/shop/get_company_level'"></my-component>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper wrapper-content" id="app">
+        <div class="row">
+            <div class="col-sm-12">                
+                <div class="ibox">
+                <!-- begin -->
+                    <div class="ibox-title">
+                        <ul class="nav nav-tabs nav-tabs-link">
+                            <li :class="active1"><a @click="s_index">消费额</a></li>
+                            <!-- <li :class="active2"><a @click="s_sales">销售额</a></li> -->
+                            <li :class="active2"><a @click="s_consume">消耗额</a></li>
+                            <li class="pull-right">
+                                <div class="ibox-tools"> 
+                                    <!-- <a href="javascript:location.reload();" class="btn btn-primary btn-xs"><i class="fa fa-refresh"></i> 刷新</a> -->
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="ibox-content diy-tags">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>排名</th>
+                                    <th>会员姓名</th>
+                                    <th>会员编号</th>
+                                    <th>单位</th>
+                                    <th>金额</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(e,i) in items"> 
+                                    <td v-text="(page-1)*records+i+1"></td>
+                                    <td v-text="e.member_name"></td>
+                                    <td v-text="e.code"></td>
+                                    <td v-text="e.com_shorthand"></td>
+                                    <td v-text="e.amount?'&yen; '+ e.amount:'&yen; 0'"></td> 
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" class="footable-visible">
+                                        <ul class="pagination pull-right"></ul>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+ 
+                    </div>
+                <!-- end -->
+                </div>
+            </div>
+
+        </div> 
+    </div>
+<script src="/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="/assets/js/plugins/zTree/js/jquery.ztree.core.js"></script>
+<script type="text/javascript" src="/assets/js/plugins/zTree/js/jquery.ztree.excheck.js"></script>
+<script src="/assets/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/assets/js/content.min.js?v=1.0.0"></script>
+<script src="/assets/js/plugins/iCheck/icheck.min.js"></script>
+<script src="/assets/js/vue.min.js"></script>
+<script src="/assets/js/axios.min.js"></script>
+<script src="/assets/js/qs.js"></script>
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/plugins/layer/layer.js"></script>
+<script src="/assets/vue/common/company_t.js"></script>
+<script src="/assets/vue/member/members_consume_sequence.js?19"></script> 
+<script src="/assets/js/plugins/laypage/laypage.js"></script>
+<script src="/assets/js/plugins/laydate/laydate.js"></script>
+</body>
+</html>

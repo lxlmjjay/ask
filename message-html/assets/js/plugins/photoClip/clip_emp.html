@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no, email=no" />
+<title>支持移动设备触摸手势的jQuery图片裁剪插件</title>	
+<style>
+*{margin:0;padding: 0;}
+.header p{padding:1.3rem;}
+.clipbox{width:100%;clear:both;}
+.btn{padding:.2rem .8rem;}
+#clipArea {
+	float:left;
+	width:48%; 
+	height: 300px;
+}
+#ifile,
+#clipBtn {
+	margin: 20px;
+}
+#view {
+	float: right;
+	width:48%;
+	margin: 0;
+	background: rgba(0,0,0,.3);
+	height: 300px;
+	position: relative;
+}
+/*#view p{position: absolute;width:200px;height:200px;left:50%;top:50%;margin:-100px 0 0 -100px;}*/
+#view p{position: absolute;top:0;left:0;}
+</style>
+<!--[if IE]>
+	<script src="../admin/adminLte/js/html5shiv.min.js"></script>
+<![endif]-->
+</head>
+<body ontouchstart="">
+<article class="htmleaf-container">
+	<header class="header">
+		<p>支持鼠标中键滑动图片缩放功能</p>
+	</header>
+
+	<div class="clipbox">
+		<div id="view"><p></p></div>
+		<div id="clipArea"></div>
+	</div>
+
+	<footer class="related">
+		<input type="file" id="ifile">
+		<button id="clipBtn" class="btn">裁剪</button>
+		<button id="okBtn" class="btn">确定</button>
+	</footer>
+</article>
+
+<script src="../../jquery.min.js"></script>
+<script src="./iscroll-zoom.js"></script>
+<script src="./hammer.js"></script>
+<script src="./jquery.photoClip.js"></script>
+<script>
+//document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+//
+
+var parent_show = null;
+// var parent_key = parent.$('.photoClip').attr('name');
+var parent_config = parent.$('.photoClip').data('iSet');
+var parent_key = parent_config.parent_key;
+var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+var to_parent = {};
+var area = $('#clipArea');
+// alert(parent_key);
+
+// if (parent_key == undefined) alert('上传图片的name未设置');
+//console.log(parent_config);
+//console.log(parent_config)
+if (!parent_config || parent_config.width == '' || parent_config.height =='')
+{
+	alert('参数配置有误，请检查!'); 
+}
+parent_config.width = parseInt(parent_config.width,10);
+parent_config.height = parseInt(parent_config.height,10);
+
+$('#view>p').css({
+	width:parent_config.width,
+	height:parent_config.height,
+	top:(area.height()-parent_config.height)/2,
+	left:(area.width()-parent_config.width)/2,
+	border:'1px dotted #fff'
+});
+
+$("#clipArea").photoClip({
+	width: parent_config.width,
+	height: parent_config.height,
+	file: "#ifile",
+	view: "#view>p",
+	ok: "#clipBtn",
+	strictSize:true,
+	loadStart: function() {
+		console.log("读取中...");
+	},
+	loadComplete: function(e){
+		//val = val.match(/data\:image\/(\w+);base64/);
+		//imgtype = val[1];
+		to_parent.big = e.replace('data:image','data/image');
+		console.log("读取完成");
+	},
+	clipFinish: function(dataURL){
+		to_parent.small = dataURL.replace('data:image','data/image');
+		parent_show = dataURL;		
+		//console.log(dataURL);
+	}
+});
+
+$(function(){
+	$('#okBtn').on('click', function(){
+		//什么都没做，直接关闭
+		if (isNullObj(to_parent)) parent.layer.close(index);
+
+		
+			//data[parent_key] = parent_show;
+		var tmp_josn,
+			tmp_obj = parent.document.getElementById(parent_config.pagepics_id),
+			tmp_val = $.trim(tmp_obj.value);
+
+		if (tmp_val !=''){
+			//已经有内容，有相同的成员先删后插
+			tmp_josn = $.parseJSON(tmp_val);
+
+			tmp_josn[parent_key] = parent_show;
+			tmp_obj.value = JSON.stringify(tmp_josn);
+			//alert(tmp_obj.value)
+		}else{
+			var data = [];
+			data[0] = parent_show;
+			//没内容则直接赋值
+			tmp_obj.value = JSON.stringify(data);
+			//alert(tmp_obj.value)
+		}
+			var data = [];
+			data[0] = parent_show;
+			//没内容则直接赋值
+			tmp_obj.value = JSON.stringify(data);
+		if(parent_show != null) {
+			image_lists_id = parent_config.image_lists_id;
+			parent.$('#'+image_lists_id).children('li').children('img').attr('src',parent_show);
+			// image_lists = parent.image_lists;
+			/*parent.$('#'+image_lists_id).append('<li ><img src="'+parent_show+'" width="120" height="120" ><a class="close"><i class="fa fa-close"></i></a></li>');*/
+		}
+		parent.layer.close(index);
+	})
+})
+
+//可以判断是否为空，obj = new Object() 和 obj = {} 两种形式
+function isNullObj(obj){
+    for(var i in obj){
+        if(obj.hasOwnProperty(i)){
+            return false;
+        }
+    }
+    return true;
+}
+</script>
+</body>
+</html>

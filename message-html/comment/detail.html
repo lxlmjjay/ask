@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>列表页</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <link href="/assets/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/assets/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="/assets/css/animate.min.css" rel="stylesheet"> 
+    <link href="/assets/css/style.min.css?v=4.1.0" rel="stylesheet">      
+    <link href="/assets/css/diy.css" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+    <div class="row border-bottom white-bg dashboard-header">
+        <div class="col-sm-3">
+            所属栏目：留言 &gt; 查看/回复
+        </div> 
+
+        <div class="ibox-tools pull-right">
+            <a href="javascript:history.back()" class="btn btn-primary btn-xs"><i class="fa fa-reply"></i> 返回</a> 
+        </div>
+    </div>
+
+    <div class="wrapper wrapper-content" id="app">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox">
+                <!-- begin -->
+
+                    <div class="ibox-title">
+                        <ul class="nav nav-tabs nav-tabs-link"> 
+                            <li><a href="list.html">列表</a></li>
+                            <li class="active"><a>查看/回复</a></li> 
+                            <li class="pull-right">
+                                <div class="ibox-tools"> 
+                                    <!-- <a href="javascript:location.reload();" class="btn btn-primary btn-xs"><i class="fa fa-refresh"></i> 刷新</a> -->
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="ibox-content diy-tags">
+                        <form class="form-horizontal m-t" id="commentForm" novalidate="novalidate" onsubmit="return tableware_add()">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">留言标题：</label>
+                            <div class="col-sm-8">
+                                菜百的以旧换新服务是只有总店可以办理吗?其他店可以吗?铂金对戒可以换款吗?
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">留言内容：</label>
+                            <div class="col-sm-8">
+                                如题，请回复，谢谢！
+                            </div>
+                        </div> 
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">回复内容：</label>
+                            <div class="col-sm-8">
+                                <textarea cols="100%" rows="6" class="form-control" placeholder="请填写..."></textarea>
+                            </div>
+                        </div>
+                        <!-- <div class="form-group">
+                            <label class="col-sm-3 control-label">图片：</label>
+                            <div class="col-sm-8">
+                                <label title="上传图片" class="photoClip btn btn-info btn-xs" onclick="uploadPic(this, '#img_show')">
+                                     
+                                    上传
+                                </label>
+                            </div>
+                        </div> -->
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-3">
+                                <br>
+                                <button class="btn btn-primary w100">确定</button>
+                            </div>
+                        </div>
+                    </form>
+ 
+                    </div>
+                <!-- end -->
+                </div>
+            </div>
+
+        </div> 
+    </div>
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/assets/js/content.min.js?v=1.0.0"></script>
+<script src="/assets/js/plugins/iCheck/icheck.min.js"></script>
+<script src="/assets/js/vue.min.js"></script>
+<script src="/assets/js/axios.min.js"></script>
+<script src="/assets/js/qs.js"></script>
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/plugins/layer/layer.js"></script>
+<!-- <script src="/assets/vue/common/company_t.js"></script>
+<script src="/assets/vue/member/members_consume.js?19"></script> -->
+<script src="/assets/js/plugins/laypage/laypage.js"></script>
+<script src="/assets/js/plugins/laydate/laydate.js"></script>  
+</body>
+</html>
