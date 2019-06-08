@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"message-board/models"
 	"net/http"
@@ -55,7 +56,8 @@ func AddMessage(c *gin.Context)  {
 func DeleteMessage(c *gin.Context)  {
 	userId, err := c.Cookie("user_id")
 	userPass, err := c.Cookie("user_pass")
-	mId := c.PostForm("m_id")
+	mId := c.Query("m_id")
+	fmt.Println(mId)
 	err = models.DeleteMessage(userId, userPass, mId)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
