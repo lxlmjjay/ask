@@ -1,5 +1,7 @@
 package setting
 
+//负责调用配置
+
 import (
 	"log"
 	"time"

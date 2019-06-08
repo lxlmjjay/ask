@@ -1,0 +1,6 @@
+1 修改pull.sh dir目录
+2 运行命令启动server
+nohup go run pull.go > /dev/null 2>&1 &
+
+3 配置webhook 如
+http://39.106.196.103:8089/pull
