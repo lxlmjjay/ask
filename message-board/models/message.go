@@ -1,9 +1,9 @@
 package models
 
 import (
-"database/sql"
-"fmt"
-_ "github.com/go-sql-driver/mysql"
+	"database/sql"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"message-board/pkg/setting"
 	"strconv"
@@ -11,16 +11,16 @@ _ "github.com/go-sql-driver/mysql"
 
 var (
 	db *sql.DB
+	err error
 )
 func initDatabase() {
 	var (
-		err error
 		dbType, dbName, user, password, host string
 	)
 
 	sec, err := setting.Cfg.GetSection("database")
 	if err != nil {
-		log.Fatal(2, "Fail to get section 'database': %v", err)
+		log.Println("Fail to get section 'database': ", err)
 	}
 
 	dbType = sec.Key("TYPE").String()
@@ -47,10 +47,12 @@ type Message struct {
 	MCont string `json:"m_cont"`
 }
 
-func Register(userId, userPass int) (err error) {
+func Register(userIdStr, userPassStr string) (err error) {
 	initDatabase()
 	defer db.Close()
-	stmt, err := db.Prepare("INSERT INTO user(user_id,user_pass) VALUES(?,?)")
+	userId,err := strconv.Atoi(userIdStr)
+	userPass,err := strconv.Atoi(userPassStr)
+	stmt, err := db.Prepare("INSERT INTO user (user_id,user_pass) VALUES(?,?)")
 	_, err = stmt.Exec(userId, userPass)
 	return
 }
@@ -58,11 +60,10 @@ func Register(userId, userPass int) (err error) {
 func Login(userIdStr, userPassStr string) (err error) {
 	initDatabase()
 	defer db.Close()
-	userId,_ := strconv.Atoi(userIdStr)
-	userPass,_ := strconv.Atoi(userPassStr)
+	userId,err := strconv.Atoi(userIdStr)
+	userPass,err := strconv.Atoi(userPassStr)
 	var rightPass int
 	err = db.QueryRow("select user_pass from user where user_id = ?", userId).Scan(&rightPass)
-	fmt.Println(userPass, rightPass)
 	if err != nil {
 		if err == sql.ErrNoRows {  //如果未查询到对应字段则...
 			return fmt.Errorf("not exist")
@@ -94,7 +95,7 @@ func GetAllMessages() (ms []Message, err error) {
 func AddMessage(userIdStr, userPassStr, mCont string) (mId string, err error) {
 	initDatabase()
 	defer db.Close()
-	userId,_ := strconv.Atoi(userIdStr)
+	userId,err := strconv.Atoi(userIdStr)
 	strconv.Atoi(userPassStr)  //需添加验证密码
 	stmt, err := db.Prepare("INSERT INTO message(user_id,m_cont) VALUES(?,?)")
 	res, err := stmt.Exec(userId, mCont)
@@ -107,7 +108,7 @@ func DeleteMessage(userIdStr, userPassStr, mIdStr string) (err error) {
 	defer db.Close()
 	strconv.Atoi(userIdStr)
 	strconv.Atoi(userPassStr)  //需添加验证密码
-	mId,_ := strconv.Atoi(mIdStr)
+	mId,err := strconv.Atoi(mIdStr)
 	stmt, err := db.Prepare("delete from message where m_id=?")
 	fmt.Println(mId)
 	_, err = stmt.Exec(mId)

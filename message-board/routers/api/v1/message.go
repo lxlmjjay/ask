@@ -1,16 +1,16 @@
 package v1
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"message-board/models"
-	"net/http"
-	"strconv"
+"fmt"
+"github.com/gin-gonic/gin"
+"message-board/models"
+"net/http"
 )
 
 func Register(c *gin.Context)  {
-	userId, _ := strconv.Atoi(c.PostForm("user_id"))
-	userPass, _ := strconv.Atoi(c.PostForm("user_pass"))
+	userId := c.Request.FormValue("user_id")
+	userPass := c.Request.FormValue("user_pass")
+	fmt.Println(userId, userPass)
 	err := models.Register(userId, userPass)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
@@ -20,8 +20,8 @@ func Register(c *gin.Context)  {
 }
 
 func Login(c *gin.Context)  {
-	userId := c.PostForm("user_id")
-	userPass := c.PostForm("user_pass")
+	userId := c.Request.FormValue("user_id")
+	userPass := c.Request.FormValue("user_pass")
 	err := models.Login(userId, userPass)
 	if err == nil{
 		c.SetCookie("user_id", userId, 3600, "/", "127.0.0.1", false, true)
@@ -30,7 +30,7 @@ func Login(c *gin.Context)  {
 	}else {
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
 	}
-	}
+}
 
 func GetAllMessages(c *gin.Context)  {
 	ms, err := models.GetAllMessages()
@@ -44,7 +44,7 @@ func GetAllMessages(c *gin.Context)  {
 func AddMessage(c *gin.Context)  {
 	userId, err := c.Cookie("user_id")
 	userPass, err := c.Cookie("user_pass")
-	mCont := c.PostForm("m_cont")
+	mCont := c.Request.FormValue("m_cont")
 	mId, err := models.AddMessage(userId, userPass, mCont)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"m_id":mId, "err" :err.Error()})
