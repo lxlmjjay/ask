@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"message-board/pkg/setting"
-	"message-board/routers"
-	"net/http"
+"fmt"
+"message-board/pkg/setting"
+"message-board/routers"
+"net/http"
 )
 
 func main() {
+	fmt.Println(123)
 	router := routers.InitRouter()
 
 	s := &http.Server{
