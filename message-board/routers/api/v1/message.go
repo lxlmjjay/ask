@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/astaxie/beego/logs"
 	"github.com/gin-gonic/gin"
 	"message-board/models"
 	"message-board/pkg/util"
@@ -9,12 +10,13 @@ import (
 )
 
 func Register(c *gin.Context)  {
-	userId := c.PostForm("user_id")
-	userPass := c.PostForm("user_pass")
-	err := models.Register(userId, userPass)
+	userIdStr := c.PostForm("user_id")
+	userPassStr := c.PostForm("user_pass")
+	err := models.Register(userIdStr, userPassStr)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
 	}else {
+		logs.Info("user: %s register succeed!", userIdStr)
 		c.JSON(http.StatusOK, gin.H{"err" :err})
 	}
 }
@@ -28,12 +30,15 @@ func Login(c *gin.Context)  {
 		userPass,_ := strconv.Atoi(userPassStr)
 		token, err := util.GenerateToken(userId, userPass)
 		if err == nil{
+			logs.Info("user: %s login succeed!", userIdStr)
 			c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
 			c.JSON(http.StatusOK, gin.H{"err" :err})
 		}else {
+			logs.Debug(err)
 			c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
 		}
 	} else {
+		logs.Info("user: %s login failed!", userIdStr)
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error()})
 	}
 }

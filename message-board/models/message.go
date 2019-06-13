@@ -85,21 +85,20 @@ func Login(userIdStr, userPassStr string) (err error) {
 
 	}}
 	if userPass == rightPass{
-		fmt.Println("right")
 		return
 	}
 	return fmt.Errorf("wrong password")
 }
 
-func GetAllMessages() (ms []Message, err error) {
+func GetAllMessages() (messages []Message, err error) {
 	initDatabase()
 	defer db.Close()
 	rows, err := db.Query("select * from message")
 	defer rows.Close()
 	for rows.Next() {  //next需要与scan配合完成读取，取第一行也要先next
-		m := Message{}
-		err = rows.Scan(&m.MId, &m.UserId, &m.MCont)
-		ms = append(ms, m)
+		message := Message{}
+		err = rows.Scan(&message.MId, &message.UserId, &message.MCont)
+		messages = append(messages, message)
 	}
 	err = rows.Err()  //返回迭代过程中出现的错误
 	return
