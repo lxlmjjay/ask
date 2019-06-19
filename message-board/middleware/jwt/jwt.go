@@ -24,10 +24,10 @@ func JWT() gin.HandlerFunc {
 			} else if time.Now().Unix() > claims.ExpiresAt {
 				code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 			} else {
-				userId := claims.UserId
-				userPass := claims.UserPass
-				if models.CheckAuth(userId, userPass){
-					c.Set("userId", userId)
+				username := claims.Username
+				password := claims.Password
+				if models.CheckAuth(username, password){
+					c.Set("username", username)
 				}else {
 					code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 				}

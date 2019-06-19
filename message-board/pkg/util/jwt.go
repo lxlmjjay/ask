@@ -1,27 +1,27 @@
 package util
 
 import (
-	"message-board/pkg/setting"
-	"time"
+"message-board/pkg/setting"
+"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+jwt "github.com/dgrijalva/jwt-go"
 
 )
 
-var jwtSecret = []byte(setting.JwtSecret)
+var jwtSecret = []byte(setting.AppSetting.JWTSecret)
 type Claims struct {
-	UserId int `json:"user_id"`
-	UserPass int `json:"user_pass"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(userId, userPass int) (string, error) {
+func GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3 * time.Hour)
 
 	claims := Claims{
-		userId,
-		userPass,
+		username,
+		password,
 		jwt.StandardClaims {
 			ExpiresAt : expireTime.Unix(),
 			Issuer : "message-board",
@@ -36,9 +36,9 @@ func GenerateToken(userId, userPass int) (string, error) {
 
 func ParseToken(token string) (*Claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{},
-	func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
-	})
+		func(token *jwt.Token) (interface{}, error) {
+			return jwtSecret, nil
+		})
 
 	if tokenClaims != nil {
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {

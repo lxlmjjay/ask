@@ -3,80 +3,79 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/validation"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"message-board/pkg/setting"
 	"strconv"
+	"time"
 )
-
-var (
-	db *sql.DB
-	err error
-)
-func initDatabase() {
-	var (
-		dbType, dbName, user, password, host string
-	)
-
-	sec, err := setting.Cfg.GetSection("database")
-	if err != nil {
-		log.Println("Fail to get section 'database': ", err)
-	}
-
-	dbType = sec.Key("TYPE").String()
-	dbName = sec.Key("NAME").String()
-	user = sec.Key("USER").String()
-	password = sec.Key("PASSWORD").String()
-	host = sec.Key("HOST").String()
-
-	db, err = sql.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", user, password, host, dbName))
-
-	if err != nil {
-		log.Println(err)
-	}
-}
 
 type User struct {
-	UserId int `json:"user_id"`
-	UserPass int `json:"user_pass"`
+	Id int `json:"id"`
+	Username string `json:"username" valid: MaxSize(50)"`
+	Password string `json:"password" valid:"MinSize(6); MaxSize(50)"`
 }
 
 type Message struct {
-	MId int `json:"m_id"`
-	UserId int `json:"user_id"`
-	MCont string `json:"m_cont"`
+	MessageId int `json:"message_id"`
+	Username int `json:"username"`
+	Title string `json:"title"`
+	Content string `json:"content"`
+	ImageUrl string `json:"image_url"`
+	CreatedOn int `json:"created_on"`
+	ModifiedOn int `json:"modified_on"`
 }
 
-func Register(userIdStr, userPassStr string) (err error) {
-	initDatabase()
+func Register(username, password string) (err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
 	defer db.Close()
-	userId,err := strconv.Atoi(userIdStr)
-	userPass,err := strconv.Atoi(userPassStr)
 	valid := validation.Validation{}
-	valid.Required(userId, "user_id").Message("user_id不能为空")
-	valid.Range(userId, 0,10000, "user_id").Message("user_id取值范围为0-10000")
-	valid.Required(userPass, "user_pass").Message("user_pass不能为空")
-	valid.Range(userId, 1000,999999, "user_id").Message("user_pass需要为4到6位的数字")
-	//valid.MaxSize(createdBy, 100, "created_by").Message("创建人最长为100字符")
-	//valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
+	valid.Required(username, "username").Message("username不能为空")
+	valid.Required(password, "password").Message("password不能为空")
+	valid.MaxSize(username, 50, "username").Message("username长度需要小于50个字符")
+	valid.MinSize(password, 6, "password").Message("password长度需要大于6个字符")
+	valid.MaxSize(password, 50, "password").Message("password长度需要小于50个字符")
+
 	if valid.HasErrors() {
 		fmt.Println(valid.ErrorsMap)
-		return fmt.Errorf("params form wrong")
+		err = fmt.Errorf("账号格式错误")
+		return
 	}
 
-	stmt, err := db.Prepare("INSERT INTO user (user_id,user_pass) VALUES(?,?)")
-	_, err = stmt.Exec(userId, userPass)
+	stmt, err := db.Prepare("INSERT INTO user (username,password) VALUES(?,?)")
+	_, err = stmt.Exec(username, password)
 	return
 }
 
-func Login(userIdStr, userPassStr string) (err error) {
-	initDatabase()
+func DeleteUser(username string) (err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
 	defer db.Close()
-	userId,err := strconv.Atoi(userIdStr)
-	userPass,err := strconv.Atoi(userPassStr)
-	var rightPass int
-	err = db.QueryRow("select user_pass from user where user_id = ?", userId).Scan(&rightPass)
+
+	stmt, err := db.Prepare("delete from user where username=?")
+	_, err = stmt.Exec(username)
+
+	return
+}
+
+func Login(username string, password string) (err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
+	defer db.Close()
+	var rightPass string
+	err = db.QueryRow("select password from user where username = ?", username).Scan(&rightPass)
 	if err != nil {
 		if err == sql.ErrNoRows {  //如果未查询到对应字段则...
 			return fmt.Errorf("not exist")
@@ -84,41 +83,133 @@ func Login(userIdStr, userPassStr string) (err error) {
 			return
 
 	}}
-	if userPass == rightPass{
+	if password == rightPass{
 		return
 	}
 	return fmt.Errorf("wrong password")
 }
 
-func GetAllMessages() (messages []Message, err error) {
-	initDatabase()
+func GetMessages(pageStr, perPageStr string) (messages []Message, err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+		return
+	}
 	defer db.Close()
-	rows, err := db.Query("select * from message")
+    if pageStr == "" {
+		rows, err1 := db.Query("select * from message")
+		defer rows.Close()
+		if err1 != nil{
+			err = err1
+			return
+		}
+		for rows.Next() { //next需要与scan配合完成读取，取第一行也要先next
+			message := Message{}
+			err = rows.Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
+			messages = append(messages, message)
+		}
+		err1 = rows.Err() //返回迭代过程中出现的错误
+		err = err1
+		return
+	}
+	page,err := strconv.Atoi(pageStr)
+	perPage, err := strconv.Atoi(perPageStr)
+	offset := page * perPage
+	rows, err := db.Query("select * from message limit ?,?", offset, perPage)
 	defer rows.Close()
-	for rows.Next() {  //next需要与scan配合完成读取，取第一行也要先next
+	for rows.Next() { //next需要与scan配合完成读取，取第一行也要先next
 		message := Message{}
-		err = rows.Scan(&message.MId, &message.UserId, &message.MCont)
+		err = rows.Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
 		messages = append(messages, message)
 	}
-	err = rows.Err()  //返回迭代过程中出现的错误
+	err = rows.Err() //返回迭代过程中出现的错误
 	return
 }
 
-func AddMessage(userId int, mCont string) (mId string, err error) {
-	initDatabase()
+func GetMessageById(messageIdStr string) (message Message, err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
 	defer db.Close()
-	stmt, err := db.Prepare("INSERT INTO message(user_id,m_cont) VALUES(?,?)")
-	res, err := stmt.Exec(userId, mCont)
-	mIdInt, err := res.LastInsertId()
-	return strconv.Itoa(int(mIdInt)), err
+	messageId,err := strconv.Atoi(messageIdStr)
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	if err != nil {
+		if err == sql.ErrNoRows {  //如果未查询到对应字段则...
+		    err = fmt.Errorf("该message不存在")
+			return
+		} else {
+			return
+		}}
+	return
 }
 
-func DeleteMessage(mIdStr string) (err error) {
-	initDatabase()
+func AddMessage(username, title, content, imageUrl string) (message Message, err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
 	defer db.Close()
-	mId,err := strconv.Atoi(mIdStr)
-	stmt, err := db.Prepare("delete from message where m_id=?")
-	fmt.Println(mId)
-	_, err = stmt.Exec(mId)
+	stmt, err := db.Prepare("INSERT INTO message(username,title,content,image_url,created_on,modified_on) VALUES(?,?,?,?,?,?)")
+	res, err := stmt.Exec(username, title, content, imageUrl, int(time.Now().Unix()), int(time.Now().Unix()))
+	messageId, err := res.LastInsertId()  //LastInsertId只在自增列时有效
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	if err != nil {
+		err = fmt.Errorf("添加失败")
+		return
+		}
+	return
+}
+
+func ModifyMessage(messageId, title, content, imageUrl string) (message Message, err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+	}
+	defer db.Close()
+	stmt, err := db.Prepare("update message set title=?,content=?,image_url=?,modified_on=? where message_id=?")
+	_, err = stmt.Exec(title, content, imageUrl, int(time.Now().Unix()), messageId)
+	if err != nil {
+		err = fmt.Errorf("修改失败")
+		return
+	}
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	if err != nil {
+		err = fmt.Errorf("修改失败")
+		return
+	}
+	return
+
+}
+
+func DeleteMessage(messageIdStr, username string) (err error) {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		log.Println(err)
+	}
+	defer db.Close()
+
+	var rightName string
+	messageId,err := strconv.Atoi(messageIdStr)
+	err = db.QueryRow("select username from message where message_id = ?", messageId).Scan(&rightName)
+	if err != nil {
+		if err == sql.ErrNoRows {  //如果未查询到对应字段则...
+			return fmt.Errorf("该message不存在")
+		} else {
+			return
+		}}
+	if username != rightName{
+		return fmt.Errorf("该用户没有权限")
+	}
+	stmt, err := db.Prepare("delete from message where message_id=?")
+	_, err = stmt.Exec(messageId)
 	return
 }

@@ -1,18 +1,30 @@
 package models
 
+import (
+	"database/sql"
+	"fmt"
+	"github.com/astaxie/beego/logs"
+	"message-board/pkg/setting"
+)
+
 type Auth struct {
 	ID int `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func CheckAuth(userId, userPass int) bool {
-	initDatabase()
+func CheckAuth(username, password string) bool {
+	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
+	if err != nil {
+		logs.Warn(err)
+		return false
+	}
 	defer db.Close()
-	var rightPass int
-	err = db.QueryRow("select user_pass from user where user_id = ?", userId).Scan(&rightPass)
+	var rightPass string
+	err = db.QueryRow("select password from user where usename = ?", username).Scan(&rightPass)
 	if err != nil {return false}
-	if userPass == rightPass{
+	if password == rightPass{
 		return true
 	}else{
 		return false

@@ -9,54 +9,65 @@ import (
 "github.com/go-ini/ini"
 )
 
-var (
-	Cfg *ini.File
-
-	RunMode string
-
+type Server struct {
 	HTTPPort int
 	ReadTimeout time.Duration
 	WriteTimeout time.Duration
+}
 
+type App struct {
 	PageSize int
-	JwtSecret string
+	JWTSecret string
+	RuntimeRootPath string
+
+	ImagePrefixUrl string
+	ImageSavePath string
+	ImageMaxSize int
+	ImageAllowExts []string
+
+	LogSavePath string
+	LogSaveName string
+	LogFileExt string
+	TimeFormat string
+}
+
+type Database struct {
+	Type string
+	User string
+	Password string
+	Host string
+	Name string
+}
+
+var (
+	cfg *ini.File
+	RunMode string
+
+	ServerSetting = &Server{}
+	AppSetting = &App{}
+	DatabaseSetting  = &Database{}
 )
 
-func init() {
-	var err error
-	Cfg, err = ini.Load("conf/app.ini")
+func Setup() {
+	cfg, err := ini.Load("conf/app.ini")
 	if err != nil {
 		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
 	}
 
-	LoadBase()
-	LoadServer()
-	LoadApp()
-}
+	RunMode = cfg.Section("").Key("RUN_MODE").MustString("debug")
 
-func LoadBase() {
-	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
-}
-
-func LoadServer() {
-	sec, err := Cfg.GetSection("server")
-	if err != nil {
-		log.Fatalf("Fail to get section 'server': %v", err)
+	if err := cfg.Section("server").MapTo(ServerSetting); err != nil {
+		log.Fatalf("Cfg.MapTo ServerSetting err: %v", err)
 	}
+	ServerSetting.ReadTimeout *= time.Second
+	ServerSetting.WriteTimeout *= time.Second
 
-	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
-
-	HTTPPort = sec.Key("HTTP_PORT").MustInt(8000)
-	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
-	WriteTimeout =  time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
-}
-
-func LoadApp() {
-	sec, err := Cfg.GetSection("app")
-	if err != nil {
-		log.Fatalf("Fail to get section 'app': %v", err)
+	if err := cfg.Section("app").MapTo(AppSetting); err != nil {
+		log.Fatalf("Cfg.MapTo AppSetting err: %v", err)
 	}
+	AppSetting.ImageMaxSize *=  1024 * 1024
 
-	JwtSecret = sec.Key("JWT_SECRET").MustString("!@)*#)!@U#@*!@!)")
-	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
+	if err := cfg.Section("database").MapTo(DatabaseSetting); err != nil {
+		log.Fatalf("Cfg.MapTo DatabaseSetting err: %v", err)
+	}
 }
