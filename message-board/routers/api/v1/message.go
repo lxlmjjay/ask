@@ -1,7 +1,8 @@
 package v1
 
 import (
-"github.com/astaxie/beego/logs"
+	"fmt"
+	"github.com/astaxie/beego/logs"
 "github.com/gin-gonic/gin"
 "message-board/models"
 "message-board/pkg/setting"
@@ -41,14 +42,14 @@ func Login(c *gin.Context)  {
 		token, err := util.GenerateToken(username, password)
 		if err == nil{
 			c.SetCookie("token", token, 3600, "/", "127.0.0.1", false, true)
-			c.JSON(http.StatusOK, gin.H{"err" :err, "msg":"登录成功"})
+			c.JSON(http.StatusOK, gin.H{"code" : http.StatusOK, "msg":"登录成功"})
 			logs.Info("user: %s login succeed!", username)
 		}else {
-			c.JSON(http.StatusOK, gin.H{"err" :err.Error(),"msg":"登录失败"})
+			c.JSON(http.StatusOK, gin.H{"code": http.StatusUnauthorized, "err" :err.Error(),"msg":"登录失败"})
 			logs.Debug(err)
 		}
 	} else {
-		c.JSON(http.StatusOK, gin.H{"err" :err.Error(),"msg":"登录失败"})
+		c.JSON(http.StatusOK, gin.H{"code": http.StatusUnauthorized, "err" :err.Error(),"msg":"登录失败"})
 		logs.Info("user: %s login failed!", username)
 	}
 }
@@ -107,15 +108,19 @@ func ModifyMessage(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	imageUrl, err := upload.GetImageUrl(c)
+	fmt.Println(messageId, title, content, imageUrl)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error(), "msg":"修改失败"})
+		logs.Info("user %s failed to modify message", c.MustGet("username").(string))
 		return
 	}
 	message, err := models.ModifyMessage(messageId, title, content, imageUrl)
 	if err != nil{
 		c.JSON(http.StatusOK, gin.H{"err" :err.Error(), "msg": "修改失败"})
+		logs.Info("user %s failed to modify message for mysql", c.MustGet("username").(string))
 	}else {
 		c.JSON(http.StatusOK, gin.H{"err" :err,"msg":"修改成功","data":message})
+		logs.Info("user %s modify message successfully", c.MustGet("username").(string))
 	}
 }
 
@@ -131,7 +136,7 @@ func DeleteMessage(c *gin.Context)  {
 }
 
 func GetImage(c *gin.Context) {
-	name := c.Param("name")
+	name := c.Param("image_name")
 	path := setting.AppSetting.ImageSavePath + name
 	c.File(path)
 }

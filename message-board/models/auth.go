@@ -22,8 +22,10 @@ func CheckAuth(username, password string) bool {
 	}
 	defer db.Close()
 	var rightPass string
-	err = db.QueryRow("select password from user where usename = ?", username).Scan(&rightPass)
-	if err != nil {return false}
+	err = db.QueryRow("select password from user where username = ?", username).Scan(&rightPass)
+	if err != nil {
+		return false
+	}
 	if password == rightPass{
 		return true
 	}else{

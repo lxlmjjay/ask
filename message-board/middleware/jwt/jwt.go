@@ -16,7 +16,9 @@ func JWT() gin.HandlerFunc {
 		code := e.SUCCESS
 		token,err := c.Cookie("token")
 		if err != nil || token == "" {
-			code = e.INVALID_PARAMS
+			c.JSON(http.StatusUnauthorized, gin.H{"code" : http.StatusUnauthorized, "err" : "用户未登录","msg" : "请登录后再访问该内容访问该内容"})
+			c.Abort()
+			return
 		} else {
 			claims, err := util.ParseToken(token)
 			if err != nil {

@@ -26,14 +26,14 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/auth", v1.Login)
 		apiv1.DELETE("/auth",jwt.JWT(), v1.Logout)
 
-		apiv1.GET("/images/:imageName",jwt.JWT(), v1.GetImage)
+		apiv1.GET("/images/:image_name",jwt.JWT(), v1.GetImage)
 
 		apiv1.GET("/messages",jwt.JWT(), v1.GetMessages)
 		apiv1.POST("/messages",jwt.JWT(), v1.AddMessage)
 
-		apiv1.GET("/messages/:id",jwt.JWT(), v1.GetMessageById)
-		apiv1.PUT("/messages/:id",jwt.JWT(), v1.ModifyMessage)
-		apiv1.DELETE("/messages/:id",jwt.JWT(), v1.DeleteMessage)
+		apiv1.GET("/messages/:message_id",jwt.JWT(), v1.GetMessageById)
+		apiv1.PUT("/messages/:message_id",jwt.JWT(), v1.ModifyMessage)
+		apiv1.DELETE("/messages/:message_id",jwt.JWT(), v1.DeleteMessage)
 	}
 
 	return r

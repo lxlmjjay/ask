@@ -20,7 +20,7 @@ type User struct {
 
 type Message struct {
 	MessageId int `json:"message_id"`
-	Username int `json:"username"`
+	Username string `json:"username"`
 	Title string `json:"title"`
 	Content string `json:"content"`
 	ImageUrl string `json:"image_url"`
@@ -106,16 +106,17 @@ func GetMessages(pageStr, perPageStr string) (messages []Message, err error) {
 		}
 		for rows.Next() { //next需要与scan配合完成读取，取第一行也要先next
 			message := Message{}
-			err = rows.Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
+			err1 = rows.Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
+			fmt.Println(err1,"err")
 			messages = append(messages, message)
-		}
+	    }
 		err1 = rows.Err() //返回迭代过程中出现的错误
 		err = err1
 		return
 	}
 	page,err := strconv.Atoi(pageStr)
 	perPage, err := strconv.Atoi(perPageStr)
-	offset := page * perPage
+	offset := (page-1) * perPage
 	rows, err := db.Query("select * from message limit ?,?", offset, perPage)
 	defer rows.Close()
 	for rows.Next() { //next需要与scan配合完成读取，取第一行也要先next
@@ -135,7 +136,7 @@ func GetMessageById(messageIdStr string) (message Message, err error) {
 	}
 	defer db.Close()
 	messageId,err := strconv.Atoi(messageIdStr)
-	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
 	if err != nil {
 		if err == sql.ErrNoRows {  //如果未查询到对应字段则...
 		    err = fmt.Errorf("该message不存在")
@@ -153,13 +154,14 @@ func AddMessage(username, title, content, imageUrl string) (message Message, err
 		logs.Warn(err)
 	}
 	defer db.Close()
-	stmt, err := db.Prepare("INSERT INTO message(username,title,content,image_url,created_on,modified_on) VALUES(?,?,?,?,?,?)")
-	res, err := stmt.Exec(username, title, content, imageUrl, int(time.Now().Unix()), int(time.Now().Unix()))
+	stmt, err := db.Prepare("INSERT INTO message (username,title,content,image_url,created_on,modified_on) VALUES(?,?,?,?,?,?)")
+	now := int(time.Now().Unix())
+	res, err := stmt.Exec(username, title, content, imageUrl, now, now)
 	messageId, err := res.LastInsertId()  //LastInsertId只在自增列时有效
 	if err != nil {
-		log.Fatal(err)
+		logs.Warn(err)
 	}
-	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
 	if err != nil {
 		err = fmt.Errorf("添加失败")
 		return
@@ -167,21 +169,24 @@ func AddMessage(username, title, content, imageUrl string) (message Message, err
 	return
 }
 
-func ModifyMessage(messageId, title, content, imageUrl string) (message Message, err error) {
+func ModifyMessage(messageIdStr, title, content, imageUrl string) (message Message, err error) {
 	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
 	if err != nil {
 		logs.Warn(err)
 	}
 	defer db.Close()
+	messageId, err := strconv.Atoi(messageIdStr)
 	stmt, err := db.Prepare("update message set title=?,content=?,image_url=?,modified_on=? where message_id=?")
 	_, err = stmt.Exec(title, content, imageUrl, int(time.Now().Unix()), messageId)
 	if err != nil {
+		fmt.Println(err)
 		err = fmt.Errorf("修改失败")
 		return
 	}
-	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message)
+	err = db.QueryRow("select * from message where message_id = ?", messageId).Scan(&message.MessageId, &message.Username, &message.Title, &message.Content, &message.ImageUrl, &message.CreatedOn, &message.ModifiedOn)
 	if err != nil {
+		fmt.Println(err)
 		err = fmt.Errorf("修改失败")
 		return
 	}
