@@ -2,15 +2,17 @@ package main
 
 import (
 "fmt"
-"message-board/pkg/log"
-"message-board/pkg/setting"
-"message-board/routers"
-"net/http"
+	"message-board/middleware/logger"
+	"message-board/models"
+    "message-board/pkg/setting"
+    "message-board/routers"
+    "net/http"
 )
 
 func init()  {
 	setting.Setup()
-	log.Setup()
+	logger.Setup()
+	models.Setup()
 }
 
 func main() {

@@ -18,7 +18,6 @@ type Server struct {
 type App struct {
 	PageSize int
 	JWTSecret string
-	RuntimeRootPath string
 
 	ImagePrefixUrl string
 	ImageSavePath string
@@ -26,7 +25,6 @@ type App struct {
 	ImageAllowExts []string
 
 	LogSavePath string
-	LogSaveName string
 	LogFileExt string
 	TimeFormat string
 }
@@ -40,7 +38,6 @@ type Database struct {
 }
 
 var (
-	cfg *ini.File
 	RunMode string
 
 	ServerSetting = &Server{}

@@ -5,11 +5,12 @@ import (
 "net/http"
 )
 
-func Root(c *gin.Context)  {
+func Info(c *gin.Context)  {
 	c.JSON(http.StatusOK, gin.H{"links":[]gin.H{
-		{ "rel":"获取图片", "method": "get", "href":"/api/v1/images" } ,
+		{ "rel":"获取指定名称的图片", "method": "get", "href":"/api/v1/images/xxx" } ,
 
 		{ "rel":"注册", "method": "post", "href":"/api/v1/user" } ,
+		{ "rel":"修改账号" , "method": "put（携带有效token）", "href":"/api/v1/user" },
 		{ "rel":"删号", "method": "delete（携带有效token）", "href":"/api/v1/user" },
 
 		{ "rel":"登录", "method": "delete", "href":"/api/v1/auth" },

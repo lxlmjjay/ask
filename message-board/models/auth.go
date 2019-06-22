@@ -1,10 +1,9 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"message-board/pkg/setting"
+	"net/http"
+	"strconv"
 )
 
 type Auth struct {
@@ -14,15 +13,8 @@ type Auth struct {
 }
 
 func CheckAuth(username, password string) bool {
-	db, err := sql.Open(setting.DatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		setting.DatabaseSetting.User, setting.DatabaseSetting.Password, setting.DatabaseSetting.Host, setting.DatabaseSetting.Name))
-	if err != nil {
-		logs.Warn(err)
-		return false
-	}
-	defer db.Close()
 	var rightPass string
-	err = db.QueryRow("select password from user where username = ?", username).Scan(&rightPass)
+	err := db.QueryRow("select password from user where username = ?", username).Scan(&rightPass)
 	if err != nil {
 		return false
 	}
@@ -31,4 +23,20 @@ func CheckAuth(username, password string) bool {
 	}else{
 		return false
 	}
+}
+
+func CheckMessageAuth(username, messageIdStr string) (code int, err error, msg string) {
+	messageId, err := strconv.Atoi(messageIdStr)
+	if err != nil{
+		return http.StatusBadRequest, fmt.Errorf("请求格式不对"),"请求地址messages/xxx中,xxx必须是数字"
+	}
+	var rightName string
+	err = db.QueryRow("select username from message where message_id = ?", messageId).Scan(&rightName)
+	if err != nil {
+		return http.StatusNotFound, fmt.Errorf("此message不存在"), "请求错误或已被删除"
+	}
+	if username == rightName {
+		return http.StatusOK, nil, ""
+	}
+	return http.StatusForbidden, fmt.Errorf("没有权限"),"不能修改其他账号的message"
 }

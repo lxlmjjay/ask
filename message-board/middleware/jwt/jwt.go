@@ -1,45 +1,42 @@
 package jwt
 
 import (
-"message-board/models"
-"net/http"
-"time"
+	"message-board/models"
+	"net/http"
+	"time"
 
-"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 
-"message-board/pkg/e"
-"message-board/pkg/util"
+	"message-board/pkg/util"
 )
 
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		code := e.SUCCESS
-		token,err := c.Cookie("token")
+		token, err := c.Cookie("token")
 		if err != nil || token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"code" : http.StatusUnauthorized, "err" : "用户未登录","msg" : "请登录后再访问该内容访问该内容"})
-			c.Abort()
-			return
-		} else {
-			claims, err := util.ParseToken(token)
-			if err != nil {
-				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-			} else if time.Now().Unix() > claims.ExpiresAt {
-				code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
-			} else {
-				username := claims.Username
-				password := claims.Password
-				if models.CheckAuth(username, password){
-					c.Set("username", username)
-				}else {
-					code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-				}
-			}
-		}
-		if code != e.SUCCESS {
-			c.JSON(http.StatusUnauthorized, gin.H{"err" : e.GetMsg(code)})
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "用户未登录", "msg": "请登录后再访问该内容访问该内容"})
 			c.Abort()
 			return
 		}
+		claims, err := util.ParseToken(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "token解析错误", "msg": "请重新登录后再访问该内容访问该内容"})
+			c.Abort()
+			return
+		}
+
+		if claims.ExpiresAt < time.Now().Unix() {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "token超时", "msg": "请重新登录后再访问该内容访问该内容"})
+			c.Abort()
+			return
+		}
+
+		if !models.CheckAuth(claims.Username, claims.Password) {
+			c.JSON(http.StatusUnauthorized, gin.H{"err": "token解析错误", "msg": "请重新登录后再访问该内容访问该内容"})
+			c.Abort()
+			return
+		}
+		c.Set("username", claims.Username)
 
 		c.Next()
 	}

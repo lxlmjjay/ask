@@ -10,17 +10,15 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.New()
-	//r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	//r.Use(cors.Cors())  //允许跨域
 	gin.SetMode(setting.RunMode)
-	r.GET("/",logger.Logger(), Root)
-	//r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
-	//r.POST("/upload", api.UploadImage)
+	r.GET("/",logger.Logger(), Info)
 	apiv1 := r.Group("/api/v1")
 	apiv1.Use(logger.Logger())
 	{
 		apiv1.POST("/user", v1.Register)
+		apiv1.PUT("/user",jwt.JWT(), v1.ModifyUser)
 		apiv1.DELETE("/user",jwt.JWT(), v1.DeleteUser)
 
 		apiv1.POST("/auth", v1.Login)
